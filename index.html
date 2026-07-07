@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Data Pelayanan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; }
+  .loader { border-top-color: #3b82f6; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .modal { transition: opacity .2s; }
+  tr:hover { background-color: #f9fafb; }
+</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<!-- HEADER -->
+<header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+  <div class="container mx-auto px-4 py-5 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold">📊 DASHBOARD DATA PELAYANAN</h1>
+      <p class="text-blue-100 text-sm">"        © 2026 SATYA | Profesional, Responsif, Integritas, Modern, Akuntabel"</p>
+    </div>
+    <button onclick="openModal('add')" class="mt-3 md:mt-0 bg-white text-blue-700 font-semibold px-5 py-2 rounded-lg shadow hover:bg-blue-50 transition">
+      ➕ Tambah Data
+    </button>
+  </div>
+</header>
+
+<!-- FILTER & SEARCH -->
+<section class="container mx-auto px-4 py-5">
+  <div class="bg-white rounded-xl shadow p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+    <input id="searchInput" type="text" placeholder="🔍 Cari Nama / NOP / No Pelayanan..."
+      class="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"/>
+    <select id="filterPPAT" class="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none">
+      <option value="">-- Semua PPAT --</option>
+    </select>
+    <select id="filterJenis" class="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none">
+      <option value="">-- Semua Jenis Pelayanan --</option>
+    </select>
+    <button onclick="loadData()" class="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700">
+      🔄 Refresh
+    </button>
+  </div>
+</section>
+
+<!-- TABLE -->
+<section class="container mx-auto px-4 pb-8">
+  <div class="bg-white rounded-xl shadow overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-blue-600 text-white text-xs uppercase">
+        <tr>
+          <th class="px-3 py-3">ID</th>
+          <th class="px-3 py-3">No Pelayanan</th>
+          <th class="px-3 py-3">NOP</th>
+          <th class="px-3 py-3">Nama</th>
+          <th class="px-3 py-3">Pemohon</th>
+          <th class="px-3 py-3">PPAT</th>
+          <th class="px-3 py-3">Jenis Pelayanan</th>
+          <th class="px-3 py-3">Keterangan</th>
+          <th class="px-3 py-3 text-center">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody" class="divide-y">
+        <tr><td colspan="9" class="text-center py-10 text-gray-500">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p id="infoText" class="text-xs text-gray-500 mt-2"></p>
+</section>
+
+<!-- MODAL FORM -->
+<div id="modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-5 border-b flex justify-between items-center">
+      <h2 id="modalTitle" class="text-xl font-bold text-blue-700">Tambah Data</h2>
+      <button onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-2xl">&times;</button>
+    </div>
+    <form id="dataForm" class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input type="hidden" id="rowId"/>
+      <div>
+        <label class="block text-sm font-medium mb-1">No Pelayanan *</label>
+        <input id="noPelayanan" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">NOP *</label>
+        <input id="nop" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Nama *</label>
+        <input id="nama" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Pemohon *</label>
+        <input id="pemohon" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">PPAT *</label>
+        <select id="ppat" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none">
+          <option value="">-- Pilih PPAT --</option>
+          <option>I PUTU PUSPAJANA, SH</option>
+<option>I GUSTI NYOMAN RUPINI, SH</option>
+<option>UMMI ROCHIMAH, SH., M.KN</option>
+<option>IKA AYUNINGTYAS, SH., M.KN</option>
+<option>I MADE GEDE SUWETA, S.H., M.KN</option>
+<option>NGAKAN PUTU RAI, SH., M.KN</option>
+<option>I KADEK SUARDANA, SH., M.KN</option>
+<option>PATRICIA SEMBUNG, S.H., M.KN</option>
+<option>I GEDE EDI SUANDA, SH., M.KN</option>
+<option>PUTU DARMA ADITYA WESTA, SH., M.KN</option>
+<option>I GUSTI AYU SRI IRYANI, SH., M.KN</option>
+<option>NI LUH PUTU SWANDEWI, S.H., M.KN</option>
+<option>M TAUFIQUR RACHMAN, S.H., M.KN</option>
+<option>DEBORA DAMPU, SH., M.KN</option>
+<option>NI LUH GEDE ISA PRARESTI DANGIN, SH., M.KN</option>
+<option>I GUSTI NGURAH GEDE SUSILA, SH., M.KN</option>
+<option>NYOMAN AYU KARINA SUSANTI, S.H., M.KN</option>
+<option>NI PUTU SELVYANA PUTRI PRATAMIKHA, S.H., M.KN</option>
+<option>NI KETUT AYU MAS DIRMAYUNTI, SH</option>
+<option>LUH WIKE SAPTIA DEWI, S.H., M.KN</option>
+<option>NI WAYAN ADIANI</option>
+<option>ANAK AGUNG GEDE PRATAMA DEWANGGA, S.H., M.KN</option>
+<option>IDA BAGUS GEDE PARTHA SUWIRYA, S.H., M.KN</option>
+<option>IDA AYU NYOMAN PUSPADEWI, S.H., M.KN</option>
+<option>IMAM MASHURI, SH., M.KN</option>
+<option>IDA AYU WULAN RISMAYANTHI, S.H., M.KN</option>
+<option>MADE ARI PARYADNYA, S.H., M.KN</option>
+<option>I GEDE PRAPTAJAYA, S.H., M.KN</option>
+<option>A.A. GDE AGUNG BRAHMANTA, S.H., M.KN</option>
+<option>IDA BAGUS PARAMANINGRAT MANUABA, S.H., M.KN</option>
+<option>I GST NGURAH AGUNG ANDIKA DARMAWAN, S.H., M.KN</option>
+<option>NI KADEK NILA KUSUMA SARI, S.H., M.KN</option>
+<option>KADEK DWI TUSIDHI CESARYANTI, S.H., M.KN</option>
+<option>ANAK AGUNG ANGGA PRIMANTARI, S.H., M.KN</option>
+<option>I GUSTI AYU INTAN WULANDARI, S.H., M.KN</option>
+<option>I KOMANG SUJANAYASA, S.H., M.KN</option>
+<option>NI NYOMAN JULIANTARI, S.H., M.KN</option>
+<option>NI PUTU SELVYANA PUTRI PRATAMIKHA, S.H., M.KN</option>
+<option>KOMING PRATIWI JUWITA, S.H., M.KN</option>
+<option>IDA AYU KALPIKAWATI, SH., SPN</option>
+<option>MADE ARIWIBAWA, SH., M.KN</option>
+<option>I GUSTI AYU RYAN SONNIA PARAMITA, SH., M.KN</option>
+<option>IDA BAGUS KETUT SUARDANA, SH., M.KN</option>
+<option>PANDE NYOMAN ANGGRAENI, SH., M.KN</option>
+<option>I WAYAN ADI PURNAMA SRIADA, SH., M.KN</option>
+<option>LUH NYOMAN DEBY KRISTINA DEWI, SH., M.KN</option>
+<option>WIWIN PONCO HARYATI, SH</option>
+<option>ANAK AGUNG FAJAR MARTINI DEWI, S.H., M.KN</option>
+<option>I WAYAN SUJANA, SH., M.KN</option>
+<option>I GUSTI AYU MADE ARYASTINI, S.P., SH., M.KN</option>
+<option>NYOMAN OKY ASOKAWATI FRISKANANDA, SH., M.KN</option>
+<option>KOMANG WINDA LISKA ATMAJA, SH., M.KN</option>
+<option>MADE PUTRI SARASWATI, SH., M.KN</option>
+<option>KADEK KHARISMA MATARINI, SH., M.KN</option>
+<option>SHERLY FEBRYANNE PRAYOGO, SH., M.KN</option>
+<option>IDA AYU SHINTYANI BRAHMISIWI, SH., MKN</option>
+<option>WAHYU SATRIA WANA PUTRA WIJAYA, SH., M.KN</option>
+<option>BPKPD ONLINE</option>
+<option>SITI NUR AZIZAH, SH., M.KN</option>
+<option>GEDE ODE ANGGA PRATAMA, S.H., M.KN</option>
+<option>IDA AYU MADE WIDYARI, SH., M.KN</option>
+<option>MADE RAKA KUSUMA ANGGARDA P, S.H., S.T., M.KN</option>
+<option>NI NYOMAN ISMAYANI, SH., M.KN</option>
+<option>I KETUT NOVA ANTA PUTRA, SH., M.KN</option>
+<option>NI MADE NOVIA ANDRYANI, S.H., M.KN</option>
+<option>ANAK AGUNG DICKY ARIANTO, SH., M.KN</option>
+<option>NI MADE NOVIA ANDRYANI, S.H., M.KN</option>
+<option>NI LUH GEK SITA PRAMITASARI, S.H., M.KN</option>
+<option>I MADE WIYARDANA, S.H., SE., M.KN</option>
+<option>LUH AYU SARASWATI, SH., M.KN</option>
+<option>MARIA SERAPHINE KARTIKA DEWI, S.H., M.KN</option>
+<option>KOMANG RIO ANJANA, SH., M.KN</option>
+<option>I KETUT NGURAH ANANDA, SH., M.KN</option>
+<option>ANAK AGUNG NANDHI LARASATI, SH., M.KN</option>
+<option>COKORDA GEDE RAMAPUTRA, SH., M.KN</option>
+<option>I GEDE ARYA KUSUMA, SH., M.KN</option>
+<option>IDA BAGUS DALEM TRY UTAMA MANUABA, S.H., M.KN</option>
+<option>I GEDE ANGGA PERMANA, S.H., M.KN</option>
+<option>I WAYAN ARYA KURNIAWAN, SH., M.KN</option>
+<option>I DEWA MADE ADHI HUTAMA, S.H., M.KN</option>
+<option>I PUTU ADI KUSNA PASEK, S.H., M.KN</option>
+<option>IDA AYU OKI AMRITA WIJAYA, S.H., M.KN</option>
+<option>ARYA BAGUS KHRISNA BUDI SANTOSA PUTRA, SH., M.KN</option>
+<option>KADEK WAHYU PAJAR SUTOYA, S.H., M.KN</option>
+<option>GUSTI AYU NADINA UTAMA PRAMADANI, SH., M.KN</option>
+<option>I GUSTI AGUNG AYU DEWI SATYAWATI, SH., M.KN</option>
+<option>MADE WIDYADI, S.H., M.KN</option>
+<option>I GUSTI AGUNG AYU PATRECIA MARTHAVIRA, SH., M.KN</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Jenis Pelayanan *</label>
+        <select id="jenisPelayanan" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none">
+          <option value="">-- Pilih Jenis --</option>
+          <option>PENDAFTARAN DATA OP BARU</option>
+          <option>MUTASI OBJEK/SUBJEK</option>
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Keterangan</label>
+        <textarea id="keterangan" rows="3" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"></textarea>
+      </div>
+      <div class="md:col-span-2 flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100">Batal</button>
+        <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">💾 Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="hidden fixed bottom-5 right-5 bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg z-50"></div>
+
+<script>
+/* ============================================================
+   KONFIGURASI — GANTI URL DI BAWAH DENGAN URL WEB APP ANDA
+   ============================================================ */
+const API_URL = "https://script.google.com/macros/s/AKfycbxwMRgbEuhTIWq7lfmZjMaCaZ3zcEzS4WJ5IdiCzzppiFQjOk8shPOw-idMhOmQMK_E/exec";
+
+/* ============================================================ */
+let allData = [];
+
+document.getElementById('dataForm').addEventListener('submit', submitForm);
+document.getElementById('searchInput').addEventListener('input', renderTable);
+document.getElementById('filterPPAT').addEventListener('change', renderTable);
+document.getElementById('filterJenis').addEventListener('change', renderTable);
+
+async function loadData() {
+  try {
+    document.getElementById('tableBody').innerHTML =
+      '<tr><td colspan="9" class="text-center py-10"><div class="loader w-8 h-8 border-4 border-gray-200 rounded-full mx-auto"></div></td></tr>';
+    const res = await fetch(API_URL + "?action=read");
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message);
+    allData = json.data;
+    populateFilters();
+    renderTable();
+    document.getElementById('infoText').textContent = `Total data: ${allData.length} record`;
+  } catch (e) {
+    document.getElementById('tableBody').innerHTML =
+      `<tr><td colspan="9" class="text-center py-10 text-red-500">❌ Gagal memuat: ${e.message}</td></tr>`;
+  }
+}
+
+function populateFilters() {
+  const ppatSet = new Set(), jenisSet = new Set();
+  allData.forEach(d => { ppatSet.add(d.ppat); jenisSet.add(d.jenisPelayanan); });
+  const ppatSel = document.getElementById('filterPPAT');
+  const jenisSel = document.getElementById('filterJenis');
+  const curP = ppatSel.value, curJ = jenisSel.value;
+  ppatSel.innerHTML = '<option value="">-- Semua PPAT --</option>' +
+    [...ppatSet].map(p => `<option ${p===curP?'selected':''}>${p}</option>`).join('');
+  jenisSel.innerHTML = '<option value="">-- Semua Jenis Pelayanan --</option>' +
+    [...jenisSet].map(j => `<option ${j===curJ?'selected':''}>${j}</option>`).join('');
+}
+
+function renderTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const fP = document.getElementById('filterPPAT').value;
+  const fJ = document.getElementById('filterJenis').value;
+  const filtered = allData.filter(d =>
+    (!q || (d.nama+d.pemohon+d.nop+d.noPelayanan).toLowerCase().includes(q)) &&
+    (!fP || d.ppat === fP) &&
+    (!fJ || d.jenisPelayanan === fJ)
+  );
+  const tbody = document.getElementById('tableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-10 text-gray-500">Tidak ada data</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(d => `
+    <tr>
+      <td class="px-3 py-2 font-mono text-xs">${d.id}</td>
+      <td class="px-3 py-2">${d.noPelayanan}</td>
+      <td class="px-3 py-2 font-mono text-xs">${d.nop}</td>
+      <td class="px-3 py-2 font-semibold">${d.nama}</td>
+      <td class="px-3 py-2">${d.pemohon}</td>
+      <td class="px-3 py-2"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">${d.ppat}</span></td>
+      <td class="px-3 py-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">${d.jenisPelayanan}</span></td>
+      <td class="px-3 py-2 text-gray-600 text-xs">${d.keterangan || '-'}</td>
+      <td class="px-3 py-2 text-center whitespace-nowrap">
+        <button onclick='editRow(${JSON.stringify(d)})' class="text-blue-600 hover:underline mr-2">✏️ Edit</button>
+        <button onclick="deleteRow('${d.id}')" class="text-red-600 hover:underline">🗑️ Hapus</button>
+      </td>
+    </tr>`).join('');
+}
+
+function openModal(mode, data = {}) {
+  document.getElementById('modalTitle').textContent = mode === 'add' ? 'Tambah Data' : 'Edit Data';
+  document.getElementById('rowId').value = data.id || '';
+  document.getElementById('noPelayanan').value = data.noPelayanan || '';
+  document.getElementById('nop').value = data.nop || '';
+  document.getElementById('nama').value = data.nama || '';
+  document.getElementById('pemohon').value = data.pemohon || '';
+  document.getElementById('ppat').value = data.ppat || '';
+  document.getElementById('jenisPelayanan').value = data.jenisPelayanan || '';
+  document.getElementById('keterangan').value = data.keterangan || '';
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function editRow(d) { openModal('edit', d); }
+
+async function submitForm(e) {
+  e.preventDefault();
+  const payload = {
+    id: document.getElementById('rowId').value,
+    noPelayanan: document.getElementById('noPelayanan').value,
+    nop: document.getElementById('nop').value,
+    nama: document.getElementById('nama').value,
+    pemohon: document.getElementById('pemohon').value,
+    ppat: document.getElementById('ppat').value,
+    jenisPelayanan: document.getElementById('jenisPelayanan').value,
+    keterangan: document.getElementById('keterangan').value
+  };
+  const action = payload.id ? 'update' : 'create';
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, data: payload })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message);
+    showToast(json.message);
+    closeModal();
+    loadData();
+  } catch (e) { showToast('❌ ' + e.message, true); }
+}
+
+async function deleteRow(id) {
+  if (!confirm('Yakin ingin menghapus data ini?')) return;
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'delete', data: { id } })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message);
+    showToast(json.message);
+    loadData();
+  } catch (e) { showToast('❌ ' + e.message, true); }
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `fixed bottom-5 right-5 px-5 py-3 rounded-lg shadow-lg z-50 text-white ${err?'bg-red-600':'bg-green-600'}`;
+  t.classList.remove('hidden');
+  setTimeout(() => t.classList.add('hidden'), 3000);
+}
+
+loadData();
+</script>
+</body>
+</html>
