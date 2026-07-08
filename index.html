@@ -247,7 +247,7 @@ function populateFilters() {
   const ppatSel = document.getElementById('filterPPAT');
   const jenisSel = document.getElementById('filterJenis');
   const curP = ppatSel.value, curJ = jenisSel.value;
-  ppatSel.innerHTML = '<option value="">-- Semua PPAT --</option>' +
+  ppatSel.innerHTML = '<option value="">-- Masyarakat/Notaris --</option>' +
     [...ppatSet].map(p => `<option ${p===curP?'selected':''}>${p}</option>`).join('');
   jenisSel.innerHTML = '<option value="">-- Semua Jenis Pelayanan --</option>' +
     [...jenisSet].map(j => `<option ${j===curJ?'selected':''}>${j}</option>`).join('');
